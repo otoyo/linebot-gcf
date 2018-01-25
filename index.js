@@ -41,5 +41,8 @@ exports.webhook = function webhook(req, res) {
     throw new SignatureValidationFailed("signature validation failed", signature);
   }
 
-  Promise.all(req.body.events.map(handleEvent)).then((result) => res.json(result));
+  Promise
+    .all(req.body.events.map(handleEvent))
+    .then((result) => res.json(result).catch())
+    .catch((error) => console.error(error));
 };
