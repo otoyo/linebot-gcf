@@ -43,6 +43,6 @@ exports.webhook = function webhook(req, res) {
 
   Promise
     .all(req.body.events.map(handleEvent))
-    .then((result) => res.json(result).catch())
+    .then((result) => res.json(result))
     .catch((error) => console.error(error));
 };
