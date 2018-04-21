@@ -37,7 +37,7 @@ exports.webhook = function webhook(req, res) {
     throw new line.SignatureValidationFailed("no signature");
   }
 
-  if (!line.validateSignature(req.rawBody, config.channelSecret, signature)) {
+  if (!line.validateSignature(req.rawBody, config.line.channelSecret, signature)) {
     throw new line.SignatureValidationFailed("signature validation failed", signature);
   }
 
