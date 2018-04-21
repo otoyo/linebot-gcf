@@ -1,18 +1,55 @@
 'use strict';
 
 const line = require('@line/bot-sdk');
+const language = require('@google-cloud/language');
 const config = require('config');
 const Todoist = require('./lib/todoist.js').Todoist;
 
 // create LINE SDK client
-const client = new line.Client(config.line);
+const lineClient = new line.Client(config.line);
 
-function buildReplyText(text) {
+// create Natural Language API client
+const langClient = new language.LanguageServiceClient();
+
+function buildReplyText(event) {
+  const text = event.message.text;
+
+  if (event.source.userId === config.user.wife.lineUserId || event.source.userId === config.user.husband.lineUserId) {
+    if (text.match(/[？！]/)) {
+      const document = {
+        content: text,
+        type: 'PLAIN_TEXT'
+      };
+
+      return langClient
+        .analyzeSentiment({ document: document })
+        .then(results => {
+          const sentiment = results[0].documentSentiment;
+
+          console.log(`Sentiment score: ${sentiment.score}`);
+          console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+
+          let replyText;
+          if (sentiment.score >= 0) {
+            replyText = 'こたけも嬉しいにゃ';
+          } else {
+            replyText = 'こたけはいつも平常心にゃ';
+          }
+          replyText = replyText + `[${Math.round(sentiment.score * 100) / 100.0}]`;
+
+          return Promise.resolve(replyText);
+        })
+        .catch(err => {
+          console.error('ERROR:', err);
+          return Promise.resolve(null);
+        });
+    }
+  }
+
   if (!text.match(/こたけ/)) {
     return Promise.resolve(null);
   }
 
-  let replyText;
   const talkscripts = [
     String.fromCodePoint('0x1F4A9'),
     String.fromCodePoint('0x1F495'),
@@ -35,10 +72,12 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  return buildReplyText(event.message.text)
+  return buildReplyText(event)
     .then((replyText) => {
       // use reply API
-      return client.replyMessage(event.replyToken, { type: 'text', text: replyText });
+      if (!!replyText) {
+        return lineClient.replyMessage(event.replyToken, { type: 'text', text: replyText });
+      }
     });
 }
 
