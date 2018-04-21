@@ -19,8 +19,24 @@ Put `config/default.json` as follows:
 
 ```json
 {
-  "channelAccessToken": "xxxx",
-  "channelSecret": "xxxx"
+  "line": {
+    "channelAccessToken": "xxxx",
+    "channelSecret": "xxxx"
+  },
+  "user": {
+    "husband": {
+      "lineUserId": "xxxx"
+    },
+    "wife": {
+      "lineUserId": "xxxx"
+    }
+  },
+  "todoist": {
+    "apiToken": "xxxx",
+    "projectId": {
+      "shopping": xxxx
+    }
+  }
 }
 ```
 
