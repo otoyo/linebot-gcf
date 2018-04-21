@@ -8,7 +8,7 @@ const Todoist = require('./lib/todoist.js').Todoist;
 const client = new line.Client(config.line);
 
 function buildReplyText(text) {
-  if (!text.match(/ホイちゃん/)) {
+  if (!text.match(/こたけ/)) {
     return Promise.resolve(null);
   }
 
