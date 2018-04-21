@@ -2,9 +2,31 @@
 
 const line = require('@line/bot-sdk');
 const config = require('config');
+const Todoist = require('./lib/todoist.js').Todoist;
 
 // create LINE SDK client
-const client = new line.Client(config);
+const client = new line.Client(config.line);
+
+function buildReplyText(text) {
+  if (!text.match(/ホイちゃん/)) {
+    return Promise.resolve(null);
+  }
+
+  let replyText;
+  const talkscripts = [
+    String.fromCodePoint('0x1F4A9'),
+    String.fromCodePoint('0x1F495'),
+    String.fromCodePoint('0x1F4A4')
+  ];
+
+  if (text.match(/買い物リスト/)) {
+    return (new Todoist())
+      .shoppingLists()
+      .then((items) => Promise.resolve(items.join("\n")));
+  } else {
+    return Promise.resolve(talkscripts[Math.floor(Math.random() * talkscripts.length)]);
+  }
+}
 
 // event handler
 function handleEvent(event) {
@@ -13,21 +35,11 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  const text = event.message.text;
-
-  if (!text.match(/ホイちゃん/)) {
-    return Promise.resolve(null);
-  }
-
-  const talkscripts = [
-    String.fromCodePoint('0x1F4A9'),
-    String.fromCodePoint('0x1F495'),
-    String.fromCodePoint('0x1F4A4')
-  ];
-  const replyText = talkscripts[Math.floor(Math.random() * talkscripts.length)];
-
-  // use reply API
-  return client.replyMessage(event.replyToken, { type: 'text', text: replyText });
+  return buildReplyText(event.message.text)
+    .then((replyText) => {
+      // use reply API
+      return client.replyMessage(event.replyToken, { type: 'text', text: replyText });
+    });
 }
 
 exports.webhook = function webhook(req, res) {
