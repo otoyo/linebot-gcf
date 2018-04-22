@@ -11,6 +11,24 @@ const lineClient = new line.Client(config.line);
 // create Natural Language API client
 const langClient = new language.LanguageServiceClient();
 
+const talkscripts = {
+  positive: [
+    'こたけも嬉しいにゃ',
+    'そんなことよりごはん用意するにゃ',
+    'こたけは眠いにゃ'
+  ],
+  negative: [
+    '何かあったにゃ？',
+    '嬉しいことや楽しいことを思い出すにゃ',
+    'こたけはいつも平常心にゃ'
+  ],
+  emoji: [
+    String.fromCodePoint('0x1F4A9'),
+    String.fromCodePoint('0x1F495'),
+    String.fromCodePoint('0x1F4A4')
+  ]
+};
+
 function buildReplyText(event) {
   const text = event.message.text;
 
@@ -30,11 +48,14 @@ function buildReplyText(event) {
           console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
 
           let replyText;
+          let sentimentKey;
           if (sentiment.score >= 0) {
-            replyText = 'こたけも嬉しいにゃ';
+            sentimentKey = 'positive';
           } else {
-            replyText = 'こたけはいつも平常心にゃ';
+            sentimentKey = 'negative';
           }
+
+          replyText = talkscripts[sentimentKey][Math.floor(Math.random() * talkscripts[sentimentKey].length)];
           replyText = replyText + `[${Math.round(sentiment.score * 100) / 100.0}]`;
 
           return Promise.resolve(replyText);
@@ -50,18 +71,12 @@ function buildReplyText(event) {
     return Promise.resolve(null);
   }
 
-  const talkscripts = [
-    String.fromCodePoint('0x1F4A9'),
-    String.fromCodePoint('0x1F495'),
-    String.fromCodePoint('0x1F4A4')
-  ];
-
   if (text.match(/買い物リスト/)) {
     return (new Todoist())
       .shoppingLists()
       .then((items) => Promise.resolve(items.join("\n")));
   } else {
-    return Promise.resolve(talkscripts[Math.floor(Math.random() * talkscripts.length)]);
+    return Promise.resolve(talkscripts.emoji[Math.floor(Math.random() * talkscripts.emoji.length)]);
   }
 }
 
