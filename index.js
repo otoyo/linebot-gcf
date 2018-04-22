@@ -67,7 +67,7 @@ function buildReplyText(event) {
     }
   }
 
-  if (!text.match(/こたけ/)) {
+  if (!text.match(/こたけ/) && !text.match(/こたちゃん/)) {
     return Promise.resolve(null);
   }
 
